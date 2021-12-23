@@ -6,15 +6,27 @@
         xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+        xmlns:converter="clr-namespace:Soundboard.Converter" xmlns:viewmodel="clr-namespace:Soundboard.ViewModel" 
+        xmlns:extension="clr-namespace:Soundboard.Extension"
+        d:DataContext="{d:DesignInstance Type=viewmodel:MainWindowViewModel}"
         Dialog:DialogParticipation.Register="{Binding}"
         mc:Ignorable="d"
         Title="Soundboard" 
-        Height="450" 
+        Height="510" 
         Width="800"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="CanMinimize">
+        ResizeMode="CanMinimize"
+        Closing="App_Closing">
+
+    <mah:MetroWindow.Resources>
+        <ResourceDictionary>
+            <converter:ButtonConfigsToButtonTitleConverter x:Key="ButtonConfigsToButtonTitleConverter" />
+        </ResourceDictionary>
+    </mah:MetroWindow.Resources>
+
     <Grid Margin="10,10,10,10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="60"></RowDefinition>
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
@@ -33,96 +45,92 @@
             <ColumnDefinition Width="125"></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
-        <Button Grid.Row="0" Grid.Column="0" Command="{Binding ButtonClickCommand}">
-            <Button.CommandParameter>
-                <sys:Int32>1</sys:Int32>
-            </Button.CommandParameter>
-            Play
-        </Button>
-        <Button Grid.Row="0" Grid.Column="2" Command="{Binding ButtonClickCommand}">
-            <Button.CommandParameter>
-                <sys:Int32>2</sys:Int32>
-            </Button.CommandParameter>
-            Play
-        </Button>
-        <Button Grid.Row="0" Grid.Column="4" Command="{Binding ButtonClickCommand}">
-            <Button.CommandParameter>
-                <sys:Int32>3</sys:Int32>
-            </Button.CommandParameter>
-            Play
-        </Button>
-        <Button Grid.Row="0" Grid.Column="6" Command="{Binding ButtonClickCommand}">
+        <Label VerticalAlignment="Center" HorizontalContentAlignment="Center">COM-Port:</Label>
+        <ComboBox Grid.Column="1" Grid.ColumnSpan="2" Margin="10" ItemsSource="{Binding AvailablePorts}" SelectedItem="{Binding SerialPortName}" />
+
+        <mah:ToggleSwitch
+            Grid.Column="6"
+            Grid.ColumnSpan="2"
+            Header="Mit Windows Starten"
+            OnContent="Ja"
+            OffContent="Nein"
+            IsOn="{Binding LaunchOnStartup}" />
+
+        <Button Grid.Row="1" Grid.Column="0" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 4}, UpdateSourceTrigger=PropertyChanged}">
             <Button.CommandParameter>
                 <sys:Int32>4</sys:Int32>
             </Button.CommandParameter>
-            Play
         </Button>
-        <Button Grid.Row="0" Grid.Column="8" Command="{Binding ButtonClickCommand}">
+        <Button Grid.Row="1" Grid.Column="2" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 3}, UpdateSourceTrigger=PropertyChanged}">
             <Button.CommandParameter>
-                <sys:Int32>5</sys:Int32>
+                <sys:Int32>3</sys:Int32>
             </Button.CommandParameter>
-            Play
         </Button>
-        <Button Grid.Row="2" Grid.Column="0" Command="{Binding ButtonClickCommand}">
+        <Button Grid.Row="1" Grid.Column="4" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 2}, UpdateSourceTrigger=PropertyChanged}">
             <Button.CommandParameter>
-                <sys:Int32>6</sys:Int32>
+                <sys:Int32>2</sys:Int32>
             </Button.CommandParameter>
-            Play
         </Button>
-        <Button Grid.Row="2" Grid.Column="2" Command="{Binding ButtonClickCommand}">
+        <Button Grid.Row="1" Grid.Column="6" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 1}, UpdateSourceTrigger=PropertyChanged}">
             <Button.CommandParameter>
-                <sys:Int32>7</sys:Int32>
+                <sys:Int32>1</sys:Int32>
             </Button.CommandParameter>
-            Play
         </Button>
-        <Button Grid.Row="2" Grid.Column="4" Command="{Binding ButtonClickCommand}">
+        <Button Grid.Row="1" Grid.Column="8" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 0}, UpdateSourceTrigger=PropertyChanged}">
             <Button.CommandParameter>
-                <sys:Int32>8</sys:Int32>
+                <sys:Int32>0</sys:Int32>
             </Button.CommandParameter>
-            Play
         </Button>
-        <Button Grid.Row="2" Grid.Column="6" Command="{Binding ButtonClickCommand}">
+        <Button Grid.Row="3" Grid.Column="0" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 9}, UpdateSourceTrigger=PropertyChanged}">
             <Button.CommandParameter>
                 <sys:Int32>9</sys:Int32>
             </Button.CommandParameter>
-            Play
         </Button>
-        <Button Grid.Row="2" Grid.Column="8" Command="{Binding ButtonClickCommand}">
+        <Button Grid.Row="3" Grid.Column="2" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 8}, UpdateSourceTrigger=PropertyChanged}">
             <Button.CommandParameter>
-                <sys:Int32>10</sys:Int32>
+                <sys:Int32>8</sys:Int32>
             </Button.CommandParameter>
-            Play
+        </Button>
+        <Button Grid.Row="3" Grid.Column="4" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 7}, UpdateSourceTrigger=PropertyChanged}">
+            <Button.CommandParameter>
+                <sys:Int32>7</sys:Int32>
+            </Button.CommandParameter>
+        </Button>
+        <Button Grid.Row="3" Grid.Column="6" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 6}, UpdateSourceTrigger=PropertyChanged}">
+            <Button.CommandParameter>
+                <sys:Int32>6</sys:Int32>
+            </Button.CommandParameter>
+        </Button>
+        <Button Grid.Row="3" Grid.Column="8" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 5}, UpdateSourceTrigger=PropertyChanged}">
+            <Button.CommandParameter>
+                <sys:Int32>5</sys:Int32>
+            </Button.CommandParameter>
         </Button>
 
-        <Button Grid.Row="5" Grid.Column="0" Command="{Binding ButtonClickCommand}">
-            <Button.CommandParameter>
-                <sys:Int32>11</sys:Int32>
-            </Button.CommandParameter>
-            Play
-        </Button>
-        <Button Grid.Row="5" Grid.Column="2" Command="{Binding ButtonClickCommand}">
-            <Button.CommandParameter>
-                <sys:Int32>12</sys:Int32>
-            </Button.CommandParameter>
-            Play
-        </Button>
-        <Button Grid.Row="5" Grid.Column="4" Command="{Binding ButtonClickCommand}">
-            <Button.CommandParameter>
-                <sys:Int32>13</sys:Int32>
-            </Button.CommandParameter>
-            Play
-        </Button>
-        <Button Grid.Row="5" Grid.Column="6" Command="{Binding ButtonClickCommand}">
+        <Button Grid.Row="5" Grid.Column="0" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 14}, UpdateSourceTrigger=PropertyChanged}">
             <Button.CommandParameter>
                 <sys:Int32>14</sys:Int32>
             </Button.CommandParameter>
-            Play
         </Button>
-        <Button Grid.Row="5" Grid.Column="8" Command="{Binding ButtonClickCommand}">
+        <Button Grid.Row="5" Grid.Column="2" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 13}, UpdateSourceTrigger=PropertyChanged}">
             <Button.CommandParameter>
-                <sys:Int32>15</sys:Int32>
+                <sys:Int32>13</sys:Int32>
             </Button.CommandParameter>
-            Play
+        </Button>
+        <Button Grid.Row="5" Grid.Column="4" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 12}, UpdateSourceTrigger=PropertyChanged}">
+            <Button.CommandParameter>
+                <sys:Int32>12</sys:Int32>
+            </Button.CommandParameter>
+        </Button>
+        <Button Grid.Row="5" Grid.Column="6" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 10}, UpdateSourceTrigger=PropertyChanged}">
+            <Button.CommandParameter>
+                <sys:Int32>10</sys:Int32>
+            </Button.CommandParameter>
+        </Button>
+        <Button Grid.Row="5" Grid.Column="8" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 11}, UpdateSourceTrigger=PropertyChanged}">
+            <Button.CommandParameter>
+                <sys:Int32>11</sys:Int32>
+            </Button.CommandParameter>
         </Button>
     </Grid>
 </mah:MetroWindow>
