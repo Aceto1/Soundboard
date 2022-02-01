@@ -51,9 +51,9 @@
         <mah:ToggleSwitch
             Grid.Column="6"
             Grid.ColumnSpan="2"
-            Header="Mit Windows Starten"
-            OnContent="Ja"
-            OffContent="Nein"
+            Header="Launch On Startup"
+            OnContent="Yes"
+            OffContent="No"
             IsOn="{Binding LaunchOnStartup}" />
 
         <Button Grid.Row="1" Grid.Column="0" Command="{Binding ButtonClickCommand}" Content="{Binding ButtonConfigs, Converter={StaticResource ResourceKey=ButtonConfigsToButtonTitleConverter}, ConverterParameter={extension:Int32 4}, UpdateSourceTrigger=PropertyChanged}">

@@ -33,7 +33,7 @@ namespace Soundboard
 
             ni.ContextMenuStrip = new();
 
-            ni.ContextMenuStrip.Items.Add("Beenden", null, (sender, args) =>
+            ni.ContextMenuStrip.Items.Add("Close", null, (sender, args) =>
             {
                 Close();
             });
