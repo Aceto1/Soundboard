@@ -23,6 +23,7 @@ namespace Soundboard.ViewModel
         private WaveOutEvent playbackDevice;
         private string serialPortName;
         private SerialPort serialPort;
+        private int currentlyPlayingIndex;
         private ObservableCollection<string> availablePorts;
         private ObservableCollection<ButtonConfig> buttonConfigs;
         private static IDialogCoordinator dialogCoordinator;
@@ -35,6 +36,12 @@ namespace Soundboard.ViewModel
 
             playbackDevice = new WaveOutEvent { DesiredLatency = 200 };
             playbackDevice.Volume = 0.2f;
+            playbackDevice.PlaybackStopped += (s, e) =>
+            {
+                currentlyPlayingIndex = -1;
+            };
+
+            currentlyPlayingIndex = -1;
 
             int waveInDevices = WaveOut.DeviceCount;
             for (int waveInDevice = 0; waveInDevice < waveInDevices; waveInDevice++)
@@ -218,7 +225,14 @@ namespace Soundboard.ViewModel
         private void PlaySound(int index)
         {
             if(playbackDevice.PlaybackState == PlaybackState.Playing)
-                return;
+            {
+                playbackDevice.Stop();
+
+                // Pressed the same button as the one currently playing => just stop playback
+                // Otherwise play sound of button pressed after stopping
+                if (currentlyPlayingIndex == index)
+                    return;
+            }
 
             var buttonConfig = ButtonConfigs.SingleOrDefault(m => m.Index == index);
 
@@ -228,6 +242,7 @@ namespace Soundboard.ViewModel
             var reader = new AudioFileReader(buttonConfig.FilePath);
             playbackDevice.Init(reader);
             playbackDevice.Play();
+            currentlyPlayingIndex = index;
         }
 
         private void DataReceived(object sender, SerialDataReceivedEventArgs eventArgs)
