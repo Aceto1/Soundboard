@@ -27,6 +27,7 @@ namespace Soundboard.ViewModel
         private ObservableCollection<ButtonConfig> buttonConfigs;
         private static IDialogCoordinator dialogCoordinator;
         private bool launchOnStartup;
+        private string configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Soundboard", "config.json");
 
         public MainWindowViewModel(IDialogCoordinator _dialogCoordinator)
         {
@@ -47,6 +48,11 @@ namespace Soundboard.ViewModel
             }
 
             AvailablePorts = new ObservableCollection<string>(SerialPort.GetPortNames());
+
+            var dirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Soundboard");
+
+            if (!Directory.Exists(dirPath))
+                Directory.CreateDirectory(dirPath);
 
             var appConfig = ReadConfig();
 
@@ -180,9 +186,9 @@ namespace Soundboard.ViewModel
             string jsonString;
             try
             {
-                jsonString = File.ReadAllText("config.json");
+                jsonString = File.ReadAllText(configPath);
             }
-            catch (FileNotFoundException)
+            catch (Exception)
             {
                 return new ApplicationConfig
                 {
@@ -206,7 +212,7 @@ namespace Soundboard.ViewModel
 
             string jsonString = JsonSerializer.Serialize(config);
 
-            File.WriteAllText("config.json", jsonString);
+            File.WriteAllText(configPath, jsonString);
         }
 
         private void PlaySound(int index)
