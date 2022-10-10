@@ -2,6 +2,7 @@
 using NAudio.Wave;
 using Soundboard.Model;
 using Soundboard.View.EditButtonDialog;
+using Soundboard.View.SettingsDialog;
 using Soundboard.ViewModel.Base;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Reflection;
+using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
@@ -20,19 +22,27 @@ namespace Soundboard.ViewModel
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private WaveOutEvent playbackDevice;
-        private string serialPortName;
-        private SerialPort serialPort;
+        private readonly WaveOutEvent playbackDevice;
+        private SerialPort? serialPort;
         private int currentlyPlayingIndex;
-        private ObservableCollection<string> availablePorts;
         private ObservableCollection<ButtonConfig> buttonConfigs;
+        private bool editMode;
+        private ApplicationConfig appConfig;
+
         private static IDialogCoordinator dialogCoordinator;
-        private bool launchOnStartup;
+       
         private string configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Soundboard", "config.json");
 
         public MainWindowViewModel(IDialogCoordinator _dialogCoordinator)
         {
             dialogCoordinator = _dialogCoordinator;
+
+            var dirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Soundboard");
+
+            if (!Directory.Exists(dirPath))
+                Directory.CreateDirectory(dirPath);
+
+            appConfig = ReadConfig();
 
             playbackDevice = new WaveOutEvent { DesiredLatency = 200 };
             playbackDevice.Volume = 0.2f;
@@ -43,69 +53,100 @@ namespace Soundboard.ViewModel
 
             currentlyPlayingIndex = -1;
 
-            int waveInDevices = WaveOut.DeviceCount;
-            for (int waveInDevice = 0; waveInDevice < waveInDevices; waveInDevice++)
+            if (!string.IsNullOrEmpty(appConfig.PlayBackDeviceName))
             {
-                WaveOutCapabilities deviceInfo = WaveOut.GetCapabilities(waveInDevice);
-                if (deviceInfo.ProductName.StartsWith("VoiceMeeter Aux Input"))
+                var waveInDevices = WaveOut.DeviceCount;
+                for (var waveInDevice = 0; waveInDevice < waveInDevices; waveInDevice++)
                 {
+                    var deviceInfo = WaveOut.GetCapabilities(waveInDevice);
+                    if (deviceInfo.ProductName != appConfig.PlayBackDeviceName) 
+                        continue;
+                    
                     playbackDevice.DeviceNumber = waveInDevice;
                     break;
                 }
             }
-
-            AvailablePorts = new ObservableCollection<string>(SerialPort.GetPortNames());
-
-            var dirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Soundboard");
-
-            if (!Directory.Exists(dirPath))
-                Directory.CreateDirectory(dirPath);
-
-            var appConfig = ReadConfig();
-
+            
             ButtonConfigs = new ObservableCollection<ButtonConfig>(appConfig.ButtonConfigs);
-            SerialPortName = appConfig.SerialPortName;
 
-            var startupFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup";
-            var shortcutFileName = startupFolderPath + @"\Soundboard.lnk";
-
-            if (File.Exists(shortcutFileName))
-                LaunchOnStartup = true;
-
-            ButtonClickCommand = new RelayCommand(async (obj) =>
+            SettingsButtonClickCommand = new RelayCommand(async (obj) =>
             {
-                var customDialog = new CustomDialog { Title = "Edit Button" };
+                var customDialog = new CustomDialog { Title = "Settings" };
 
-                var existingConfig = ButtonConfigs.SingleOrDefault(m => m.Index == (int)obj);
-
-                var dataContext = new EditButtonDialogViewModel(buttonConfig =>
+                var dataContext = new SettingsDialogViewModel(settings =>
                 {
                     dialogCoordinator.HideMetroDialogAsync(this, customDialog);
-                    if (buttonConfig != null)
+                    if (settings != null)
                     {
-                        buttonConfig.Index = (int)obj;
-                        EditButtonConfig(buttonConfig);
-                    }
-                })
-                {
-                    Title = existingConfig?.Title ?? "",
-                    Filepath = existingConfig?.FilePath ?? ""
-                };
+                        if (settings.LaunchOnStartup)
+                            InstallOnStartUp();
+                        else
+                            UninstallOnStartUp();
 
-                customDialog.Content = new EditButtonDialog { DataContext = dataContext };
+                        if (!string.IsNullOrEmpty(settings.PlaybackDeviceName))
+                        {
+                            var waveInDevices = WaveOut.DeviceCount;
+                            for (var waveInDevice = 0; waveInDevice < waveInDevices; waveInDevice++)
+                            {
+                                var deviceInfo = WaveOut.GetCapabilities(waveInDevice);
+                                if (!deviceInfo.ProductName.StartsWith(settings.PlaybackDeviceName))
+                                    continue;
+
+                                appConfig.PlayBackDeviceName = settings.PlaybackDeviceName;
+                                playbackDevice.DeviceNumber = waveInDevice;
+                                break;
+                            }
+                        }
+
+                        appConfig.SerialPortName = settings.SerialPortName;
+                        if (!string.IsNullOrEmpty(settings.SerialPortName))
+                        {
+                            ConnectSerialDevice(settings.SerialPortName);
+                        }
+                        else
+                        {
+                            serialPort?.Close();
+                            serialPort?.Dispose();
+                        }
+                    }
+                }, appConfig);
+
+                customDialog.Content = new SettingsDialog { DataContext = dataContext };
 
                 await dialogCoordinator.ShowMetroDialogAsync(this, customDialog);
             });
-        }
 
-        public ObservableCollection<string> AvailablePorts
-        {
-            get => availablePorts;
-            set
+            ButtonClickCommand = new RelayCommand(async (obj) =>
             {
-                availablePorts = value;
-                OnPropertyChanged(nameof(AvailablePorts));
-            }
+                if (editMode || ButtonConfigs.FirstOrDefault(m => m.Index == (int)obj) == null)
+                {
+                    var customDialog = new CustomDialog { Title = "Edit Button" };
+
+                    var existingConfig = ButtonConfigs.SingleOrDefault(m => m.Index == (int)obj);
+
+                    var dataContext = new EditButtonDialogViewModel(buttonConfig =>
+                    {
+                        dialogCoordinator.HideMetroDialogAsync(this, customDialog);
+                        if (buttonConfig != null)
+                        {
+                            buttonConfig.Index = (int)obj;
+                            EditButtonConfig(buttonConfig);
+                        }
+                    })
+                    {
+                        Title = existingConfig?.Title ?? "",
+                        Filepath = existingConfig?.FilePath ?? ""
+                    };
+
+                    customDialog.Content = new EditButtonDialog { DataContext = dataContext };
+
+                    await dialogCoordinator.ShowMetroDialogAsync(this, customDialog);
+                }
+                else
+                {
+                    PlaySound((int)obj);
+                }
+            });
         }
 
         public ObservableCollection<ButtonConfig> ButtonConfigs
@@ -118,29 +159,14 @@ namespace Soundboard.ViewModel
             }
         }
 
-        public string SerialPortName
+        public void ConnectSerialDevice(string serialPortName)
         {
-            get => serialPortName;
-            set
-            {
-                serialPortName = value;
-                ConnectSerialDevice(value);
-                OnPropertyChanged(nameof(SerialPortName));
-            }
-        }
+            serialPort?.Close();
+            serialPort?.Dispose();
 
-        public bool LaunchOnStartup
-        {
-            get => launchOnStartup;
-            set
-            {
-                launchOnStartup = value;
-                OnPropertyChanged(nameof(LaunchOnStartup));
-                if (value)
-                    InstallOnStartUp();
-                else
-                    UninstallOnStartUp();
-            }
+            serialPort = new SerialPort(serialPortName, 9600, Parity.None, 8, StopBits.One);
+            serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceived);
+            serialPort.Open();
         }
 
         void InstallOnStartUp()
@@ -173,19 +199,15 @@ namespace Soundboard.ViewModel
             File.Delete(shortcutFileName);
         }
 
-        public void ConnectSerialDevice(string serialPortName)
+        public bool EditMode
         {
-            if (!AvailablePorts.Contains(serialPortName))
-                return;
-
-            if (serialPort != null)
+            get => editMode;
+            set
             {
-                serialPort.Dispose();
+                if (value == editMode) return;
+                editMode = value;
+                OnPropertyChanged();
             }
-
-            serialPort = new SerialPort(serialPortName, 9600, Parity.None, 8, StopBits.One);
-            serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceived);
-            serialPort.Open();
         }
 
         private ApplicationConfig ReadConfig()
@@ -200,7 +222,8 @@ namespace Soundboard.ViewModel
                 return new ApplicationConfig
                 {
                     SerialPortName = "",
-                    ButtonConfigs = new List<ButtonConfig>()
+                    ButtonConfigs = new List<ButtonConfig>(),
+                    PlayBackDeviceName = ""
                 };
             }
 
@@ -214,7 +237,8 @@ namespace Soundboard.ViewModel
             var config = new ApplicationConfig()
             {
                 ButtonConfigs = ButtonConfigs.ToList(),
-                SerialPortName = serialPortName
+                SerialPortName = appConfig.SerialPortName,
+                PlayBackDeviceName = appConfig.PlayBackDeviceName
             };
 
             string jsonString = JsonSerializer.Serialize(config);
@@ -272,6 +296,8 @@ namespace Soundboard.ViewModel
         }
 
         public RelayCommand ButtonClickCommand { get; set; }
+
+        public RelayCommand SettingsButtonClickCommand { get; set; }
 
         protected void OnPropertyChanged([CallerMemberName] string? name = null)
         {
