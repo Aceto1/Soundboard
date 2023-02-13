@@ -59,7 +59,7 @@ namespace Soundboard.ViewModel
                 for (var waveInDevice = 0; waveInDevice < waveInDevices; waveInDevice++)
                 {
                     var deviceInfo = WaveOut.GetCapabilities(waveInDevice);
-                    if (deviceInfo.ProductName != appConfig.PlayBackDeviceName) 
+                    if (!deviceInfo.ProductName.StartsWith(appConfig.PlayBackDeviceName)) 
                         continue;
                     
                     playbackDevice.DeviceNumber = waveInDevice;
