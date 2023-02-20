@@ -1,0 +1,5 @@
+(sym_lib_table
+  (lib (name "MX")(type "KiCad")(uri "E:/Dateien/Source/Soundboard/marbastlib/marbastlib-mx.kicad_sym")(options "")(descr ""))
+  (lib (name "Choc")(type "KiCad")(uri "E:/Dateien/Source/Soundboard/marbastlib/marbastlib-choc.kicad_sym")(options "")(descr ""))
+  (lib (name "Misc")(type "KiCad")(uri "E:/Dateien/Source/Soundboard/marbastlib/marbastlib-various.kicad_sym")(options "")(descr ""))
+)

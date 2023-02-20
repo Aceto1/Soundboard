@@ -1,0 +1,9 @@
+Plotted to 'E:\Dateien\Source\Soundboard\Hardware\Soundboard\output\Soundboard-F_Cu.gbr'.
+Plotted to 'E:\Dateien\Source\Soundboard\Hardware\Soundboard\output\Soundboard-B_Cu.gbr'.
+Plotted to 'E:\Dateien\Source\Soundboard\Hardware\Soundboard\output\Soundboard-F_Paste.gbr'.
+Plotted to 'E:\Dateien\Source\Soundboard\Hardware\Soundboard\output\Soundboard-B_Paste.gbr'.
+Plotted to 'E:\Dateien\Source\Soundboard\Hardware\Soundboard\output\Soundboard-F_Silkscreen.gbr'.
+Plotted to 'E:\Dateien\Source\Soundboard\Hardware\Soundboard\output\Soundboard-B_Silkscreen.gbr'.
+Plotted to 'E:\Dateien\Source\Soundboard\Hardware\Soundboard\output\Soundboard-Edge_Cuts.gbr'.
+Created Gerber job file 'E:\Dateien\Source\Soundboard\Hardware\Soundboard\output\Soundboard-job.gbrjob'.
+Info: Done.

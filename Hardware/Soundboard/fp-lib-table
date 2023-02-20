@@ -1,0 +1,6 @@
+(fp_lib_table
+  (lib (name "parts")(type "KiCad")(uri "E:/Dateien/Source/Soundboard/marbastlib/parts")(options "")(descr "")(disabled))
+  (lib (name "xd")(type "KiCad")(uri "E:/Dateien/Source/Soundboard/marbastlib")(options "")(descr "")(disabled))
+  (lib (name "marbastlib-mx")(type "KiCad")(uri "E:/Dateien/Source/Soundboard/marbastlib/marbastlib-mx.pretty")(options "")(descr ""))
+  (lib (name "marbastlib-various")(type "KiCad")(uri "E:/Dateien/Source/Soundboard/marbastlib/marbastlib-various.pretty")(options "")(descr ""))
+)
